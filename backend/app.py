@@ -1,12 +1,7 @@
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-<<<<<<< HEAD
-import os
-=======
 import os, uuid
 from werkzeug.utils import secure_filename
-
-print("Starting ForenSight app...")
 
 # YOUR modules
 from intelligence.fingerprint import generate_phash
@@ -17,7 +12,6 @@ from intelligence.similarity import calculate_threat_score
 from forensics.metadata import extract_exif_metadata
 from forensics.crypto_hash import create_ownership_record
 from forensics.tamper_detect import detect_tampering
->>>>>>> efa620a13ba3088b30acac415fbcd45a0e667f50
 
 app = Flask(__name__)
 CORS(app)
@@ -26,11 +20,6 @@ UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-<<<<<<< HEAD
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 8080))
-    app.run(host='0.0.0.0', port=port)
-=======
 def allowed_file(filename):
     return "." in filename and \
            filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -53,14 +42,12 @@ def scan_image():
     if not allowed_file(file.filename):
         return jsonify({"error": "Only image files allowed (png, jpg, jpeg, webp)"}), 400
 
-    # Save uploaded file with a unique ID
     unique_id = str(uuid.uuid4())
     filename = secure_filename(file.filename)
     file_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}_{filename}")
     file.save(file_path)
 
     try:
-        # Run ALL modules
         fingerprint = generate_phash(file_path)
         web_matches = scan_web_for_matches(file_path)
         threat_score = calculate_threat_score(web_matches)
@@ -68,7 +55,6 @@ def scan_image():
         ownership = create_ownership_record(file_path)
         tamper = detect_tampering(file_path)
 
-        # Combine everything into one response
         result = {
             "scan_id": unique_id,
             "filename": filename,
@@ -86,10 +72,9 @@ def scan_image():
         return jsonify(result)
 
     finally:
-        # Clean up uploaded file after scanning
         if os.path.exists(file_path):
             os.remove(file_path)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
->>>>>>> efa620a13ba3088b30acac415fbcd45a0e667f50
+
