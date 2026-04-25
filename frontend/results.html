@@ -2,36 +2,288 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>ForenSight — Scan Results</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ForenSight — Forensic Report</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #00d4ff;
+      --accent2: #a855f7;
+      --text: #e8e8f0;
+      --text-muted: #6060a0;
+      --green: #22c55e;
+      --yellow: #f59e0b;
+      --red: #ef4444;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 10;
+    }
+    .logo { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+    .logo span { color: var(--accent); }
+    .btn-secondary {
+      font-family: 'Syne', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 8px;
+      text-decoration: none;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-secondary:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* MAIN */
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+
+    /* HEADER */
+    .report-header {
+      margin-bottom: 32px;
+    }
+    .report-header h2 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .scan-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+
+    /* CARDS GRID */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+    }
+    .card h3 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      line-height: 1.5;
+    }
+    .card p strong { color: var(--text); }
+    .card code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      background: var(--surface2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: var(--accent);
+      word-break: break-all;
+    }
+
+    /* RISK BADGE */
+    .risk-badge {
+      display: inline-block;
+      font-size: 13px;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 2px;
+      padding: 6px 16px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      color: #000;
+    }
+
+    /* THREAT SCORE BAR */
+    .score-bar-wrap {
+      margin: 10px 0 12px;
+    }
+    .score-bar-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .score-bar-bg {
+      height: 6px;
+      background: var(--surface2);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s ease;
+    }
+
+    /* FLAGS */
+    .flag {
+      font-size: 12px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      line-height: 1.5;
+      border-left: 3px solid;
+    }
+    .flag-high { background: rgba(239,68,68,0.08); border-color: var(--red); color: #fca5a5; }
+    .flag-medium { background: rgba(245,158,11,0.08); border-color: var(--yellow); color: #fcd34d; }
+    .flag-low { background: rgba(34,197,94,0.08); border-color: var(--green); color: #86efac; }
+    .flag strong { display: block; margin-bottom: 2px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; }
+
+    /* WEB MATCHES */
+    .url-link {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      text-decoration: none;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      word-break: break-all;
+      opacity: 0.8;
+      transition: opacity 0.2s;
+    }
+    .url-link:last-child { border-bottom: none; }
+    .url-link:hover { opacity: 1; }
+
+    .no-matches {
+      font-size: 13px;
+      color: var(--green);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* AI SECTION */
+    .ai-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .ai-section h3 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    #aiContent {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    /* DOWNLOAD BTN */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      background: var(--accent);
+      color: #000;
+      font-size: 14px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+  </style>
 </head>
 <body>
-  <nav><div class="logo">🔍 ForenSight</div>
-    <a href="index.html" class="btn-secondary">New Scan</a></nav>
 
-  <main class="results">
-    <h2>Forensic Report</h2>
-    <div id="scanId" class="scan-id"></div>
+  <nav>
+    <div class="logo">🔍 Foren<span>Sight</span></div>
+    <a href="index.html" class="btn-secondary">+ New Scan</a>
+  </nav>
+
+  <main>
+    <div class="report-header">
+      <h2>Forensic Report</h2>
+      <div id="scanId" class="scan-id"></div>
+    </div>
 
     <div class="cards-grid">
+      <!-- Threat Assessment -->
       <div class="card" id="threatCard">
         <h3>⚠ Threat Assessment</h3>
         <div id="threatContent"></div>
       </div>
+
+      <!-- Ownership -->
       <div class="card">
         <h3>🔑 Ownership Record</h3>
         <div id="ownershipContent"></div>
       </div>
+
+      <!-- Tamper -->
       <div class="card">
         <h3>🔬 Tamper Analysis</h3>
         <div id="tamperContent"></div>
       </div>
+
+      <!-- Web Matches -->
       <div class="card">
         <h3>📡 Web Matches</h3>
         <div id="webContent"></div>
       </div>
     </div>
 
+    <!-- AI -->
     <div class="ai-section">
       <h3>🤖 Gemini AI Forensic Analysis</h3>
       <div id="aiContent"></div>
@@ -41,51 +293,72 @@
   </main>
 
   <script>
-    const API_URL = "https://forensight-production.up.railway.app/";
+    const API_URL = "https://forensight-production.up.railway.app";
     const data = JSON.parse(localStorage.getItem('scanResult') || '{}');
     if (!data.scan_id) { window.location.href = 'index.html'; }
 
     document.getElementById('scanId').textContent = `Case ID: ${data.scan_id}`;
 
+    // THREAT
     const threat = data.intelligence?.threat_assessment;
-    const colors = { CLEAR: '#22c55e', LOW: '#84cc16', MEDIUM: '#f59e0b', HIGH: '#ef4444' };
+    const riskColors = { CLEAR: '#22c55e', LOW: '#84cc16', MEDIUM: '#f59e0b', HIGH: '#ef4444' };
+    const score = threat?.threat_score ?? 0;
+    const barColor = riskColors[threat?.risk_level] || '#666';
     document.getElementById('threatContent').innerHTML = `
-      <div class="risk-badge" style="background:${colors[threat?.risk_level]||'#666'}">
-        ${threat?.risk_level}
+      <div class="risk-badge" style="background:${barColor}">${threat?.risk_level ?? '—'}</div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-label"><span>Threat Score</span><span>${score}/100</span></div>
+        <div class="score-bar-bg"><div class="score-bar-fill" style="width:${score}%;background:${barColor}"></div></div>
       </div>
-      <p>Threat Score: <strong>${threat?.threat_score}/100</strong></p>
-      <p>Exact copies: ${threat?.exact_copy_count}</p>
-      <p>Partial copies: ${threat?.partial_copy_count}</p>
-      <p>Affected pages: ${threat?.affected_pages}</p>
+      <p>Exact copies found: <strong>${threat?.exact_copy_count ?? 0}</strong></p>
+      <p>Partial copies found: <strong>${threat?.partial_copy_count ?? 0}</strong></p>
+      <p>Affected pages: <strong>${threat?.affected_pages ?? 0}</strong></p>
     `;
 
+    // OWNERSHIP
     const own = data.forensics?.ownership_record;
     document.getElementById('ownershipContent').innerHTML = `
-      <p>ID: <code>${own?.ownership_id}</code></p>
-      <p>Registered: ${own?.registered_at_utc}</p>
-      <p>File Size: ${own?.file_size_bytes} bytes</p>
+      <p style="margin-bottom:10px">Ownership ID<br><code>${own?.ownership_id ?? '—'}</code></p>
+      <p>Registered: <strong>${own?.registered_at_utc ? new Date(own.registered_at_utc).toLocaleString() : '—'}</strong></p>
+      <p>File Size: <strong>${own?.file_size_bytes ? (own.file_size_bytes / 1024).toFixed(1) + ' KB' : '—'}</strong></p>
     `;
 
+    // TAMPER
     const tam = data.forensics?.tamper_analysis;
+    const tamperColor = { HIGH: 'var(--red)', MEDIUM: 'var(--yellow)', LOW: 'var(--green)', NONE: 'var(--green)' };
     document.getElementById('tamperContent').innerHTML = `
-      <p>Risk: <strong>${tam?.tamper_risk}</strong></p>
-      ${(tam?.forensic_flags||[]).map(f =>
-        `<div class="flag flag-${f.severity.toLowerCase()}">
-          <strong>${f.type}</strong>: ${f.description}
+      <p style="margin-bottom:12px">Risk: <strong style="color:${tamperColor[tam?.tamper_risk] || 'var(--text)'}">${tam?.tamper_risk ?? '—'}</strong></p>
+      ${(tam?.forensic_flags || []).map(f => `
+        <div class="flag flag-${f.severity.toLowerCase()}">
+          <strong>${f.type}</strong>${f.description}
         </div>`).join('')}
+      ${(!tam?.forensic_flags?.length) ? '<p style="color:var(--green)">✓ No flags detected</p>' : ''}
     `;
 
+    // WEB MATCHES
     const web = data.intelligence?.web_scan;
+    const exact = web?.exact_matches || [];
+    const partial = web?.partial_matches || [];
     document.getElementById('webContent').innerHTML = `
-      <p>Exact: ${web?.exact_matches?.length||0} | Partial: ${web?.partial_matches?.length||0}</p>
-      ${(web?.exact_matches||[]).slice(0,3).map(u=>`<a href="${u}" target="_blank" class="url-link">${u.substring(0,50)}...</a>`).join('')}
+      <p style="margin-bottom:12px">
+        Exact: <strong style="color:${exact.length ? 'var(--red)' : 'var(--green)'}">${exact.length}</strong>
+        &nbsp;·&nbsp;
+        Partial: <strong style="color:${partial.length ? 'var(--yellow)' : 'var(--green)'}">${partial.length}</strong>
+      </p>
+      ${exact.length === 0 && partial.length === 0
+        ? '<div class="no-matches">✓ No copies found online</div>'
+        : exact.slice(0, 3).map(u => `<a href="${u}" target="_blank" class="url-link">${u.substring(0, 55)}…</a>`).join('')
+      }
     `;
 
+    // AI
     document.getElementById('aiContent').textContent =
       data.ai_forensic_report?.analysis || "AI analysis not available.";
 
+    // DOWNLOAD
     document.getElementById('downloadBtn').addEventListener('click', () => {
       window.open(`${API_URL}/report/${data.scan_id}`);
     });
   </script>
-</body></html>
+</body>
+</html>
