@@ -14,7 +14,7 @@ from forensics.crypto_hash import create_ownership_record
 from forensics.tamper_detect import detect_tampering
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://forensight.netlify.app", "http://localhost:3000"])
 
 UPLOAD_FOLDER = "uploads"
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "webp"}
