@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ForenSight — Protect Your Content</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav><div class="logo">🔍 ForenSight</div></nav>
+
+  <main class="hero">
+    <h1>Detect. Prove. Protect.</h1>
+    <p>Upload your original image. ForenSight builds a forensic case.</p>
+
+    <div class="upload-zone" id="uploadZone">
+      <div class="upload-icon">📂</div>
+      <p>Drop your image here or click to upload</p>
+      <p class="small">PNG, JPG, JPEG, WEBP supported</p>
+      <input type="file" id="fileInput" accept="image/*" hidden>
+    </div>
+
+    <div id="preview" class="hidden">
+      <img id="previewImg" alt="Preview">
+      <button id="scanBtn" class="btn-primary">🔬 Run Forensic Scan</button>
+    </div>
+
+    <div id="loading" class="hidden">
+      <div class="spinner"></div>
+      <p>Running forensic analysis...</p>
+    </div>
+  </main>
+
+  <script>
+    const API_URL = "https://forensight-production.up.railway.app/";
+    const zone = document.getElementById('uploadZone');
+    const input = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
+    const loading = document.getElementById('loading');
+    let selectedFile;
+
+    zone.addEventListener('click', () => input.click());
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      handleFile(e.dataTransfer.files[0]);
+    });
+
+    input.addEventListener('change', () => handleFile(input.files[0]));
+
+    function handleFile(file) {
+      selectedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('previewImg').src = e.target.result;
+        preview.classList.remove('hidden');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    document.getElementById('scanBtn').addEventListener('click', async () => {
+      if (!selectedFile) return;
+      preview.classList.add('hidden');
+      loading.classList.remove('hidden');
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      try {
+        const response = await fetch(`${API_URL}/scan`, {
+          method: 'POST', body: formData
+        });
+        const data = await response.json();
+        localStorage.setItem('scanResult', JSON.stringify(data));
+        window.location.href = 'results.html';
+      } catch (err) {
+        loading.classList.add('hidden');
+        alert('Scan failed. Make sure the backend is running.');
+      }
+    });
+  </script>
+</body>
+</html>

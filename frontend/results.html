@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ForenSight — Scan Results</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <nav><div class="logo">🔍 ForenSight</div>
+    <a href="index.html" class="btn-secondary">New Scan</a></nav>
+
+  <main class="results">
+    <h2>Forensic Report</h2>
+    <div id="scanId" class="scan-id"></div>
+
+    <div class="cards-grid">
+      <div class="card" id="threatCard">
+        <h3>⚠ Threat Assessment</h3>
+        <div id="threatContent"></div>
+      </div>
+      <div class="card">
+        <h3>🔑 Ownership Record</h3>
+        <div id="ownershipContent"></div>
+      </div>
+      <div class="card">
+        <h3>🔬 Tamper Analysis</h3>
+        <div id="tamperContent"></div>
+      </div>
+      <div class="card">
+        <h3>📡 Web Matches</h3>
+        <div id="webContent"></div>
+      </div>
+    </div>
+
+    <div class="ai-section">
+      <h3>🤖 Gemini AI Forensic Analysis</h3>
+      <div id="aiContent"></div>
+    </div>
+
+    <button class="btn-primary" id="downloadBtn">⬇ Download PDF Report</button>
+  </main>
+
+  <script>
+    const API_URL = "https://forensight-production.up.railway.app/";
+    const data = JSON.parse(localStorage.getItem('scanResult') || '{}');
+    if (!data.scan_id) { window.location.href = 'index.html'; }
+
+    document.getElementById('scanId').textContent = `Case ID: ${data.scan_id}`;
+
+    const threat = data.intelligence?.threat_assessment;
+    const colors = { CLEAR: '#22c55e', LOW: '#84cc16', MEDIUM: '#f59e0b', HIGH: '#ef4444' };
+    document.getElementById('threatContent').innerHTML = `
+      <div class="risk-badge" style="background:${colors[threat?.risk_level]||'#666'}">
+        ${threat?.risk_level}
+      </div>
+      <p>Threat Score: <strong>${threat?.threat_score}/100</strong></p>
+      <p>Exact copies: ${threat?.exact_copy_count}</p>
+      <p>Partial copies: ${threat?.partial_copy_count}</p>
+      <p>Affected pages: ${threat?.affected_pages}</p>
+    `;
+
+    const own = data.forensics?.ownership_record;
+    document.getElementById('ownershipContent').innerHTML = `
+      <p>ID: <code>${own?.ownership_id}</code></p>
+      <p>Registered: ${own?.registered_at_utc}</p>
+      <p>File Size: ${own?.file_size_bytes} bytes</p>
+    `;
+
+    const tam = data.forensics?.tamper_analysis;
+    document.getElementById('tamperContent').innerHTML = `
+      <p>Risk: <strong>${tam?.tamper_risk}</strong></p>
+      ${(tam?.forensic_flags||[]).map(f =>
+        `<div class="flag flag-${f.severity.toLowerCase()}">
+          <strong>${f.type}</strong>: ${f.description}
+        </div>`).join('')}
+    `;
+
+    const web = data.intelligence?.web_scan;
+    document.getElementById('webContent').innerHTML = `
+      <p>Exact: ${web?.exact_matches?.length||0} | Partial: ${web?.partial_matches?.length||0}</p>
+      ${(web?.exact_matches||[]).slice(0,3).map(u=>`<a href="${u}" target="_blank" class="url-link">${u.substring(0,50)}...</a>`).join('')}
+    `;
+
+    document.getElementById('aiContent').textContent =
+      data.ai_forensic_report?.analysis || "AI analysis not available.";
+
+    document.getElementById('downloadBtn').addEventListener('click', () => {
+      window.open(`${API_URL}/report/${data.scan_id}`);
+    });
+  </script>
+</body></html>
