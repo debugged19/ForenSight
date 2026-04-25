@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os, uuid
 from werkzeug.utils import secure_filename
-from shared.gemini_analyst import generate_forensic_summary
 
 # YOUR modules
 from intelligence.fingerprint import generate_phash
@@ -43,20 +42,22 @@ def scan_image():
     if not allowed_file(file.filename):
         return jsonify({"error": "Only image files allowed (png, jpg, jpeg, webp)"}), 400
 
+    # Save uploaded file with a unique ID
     unique_id = str(uuid.uuid4())
     filename = secure_filename(file.filename)
     file_path = os.path.join(UPLOAD_FOLDER, f"{unique_id}_{filename}")
     file.save(file_path)
 
     try:
+        # Run ALL modules
         fingerprint = generate_phash(file_path)
         web_matches = scan_web_for_matches(file_path)
         threat_score = calculate_threat_score(web_matches)
         metadata = extract_exif_metadata(file_path)
         ownership = create_ownership_record(file_path)
         tamper = detect_tampering(file_path)
-        gemini_report = generate_forensic_summary(result)
 
+        # Combine everything into one response
         result = {
             "scan_id": unique_id,
             "filename": filename,
@@ -69,16 +70,14 @@ def scan_image():
                 "metadata": metadata,
                 "ownership_record": ownership,
                 "tamper_analysis": tamper
-            },
-            "ai_forensic_report": gemini_report
-
+            }
         }
         return jsonify(result)
 
     finally:
+        # Clean up uploaded file after scanning
         if os.path.exists(file_path):
             os.remove(file_path)
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8080, debug=True)
-

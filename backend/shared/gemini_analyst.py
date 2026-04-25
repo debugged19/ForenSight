@@ -65,4 +65,4 @@ Keep it factual, clear, and actionable. Do not use technical jargon without expl
             "status": "error",
             "message": str(e),
             "analysis": "AI analysis unavailable. Please review the raw findings above."
-        }22
+        }
