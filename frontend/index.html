@@ -2,36 +2,375 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ForenSight — Protect Your Content</title>
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f;
+      --surface: #12121a;
+      --surface2: #1a1a26;
+      --border: #2a2a3d;
+      --accent: #00d4ff;
+      --accent2: #a855f7;
+      --text: #e8e8f0;
+      --text-muted: #6060a0;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Syne', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* NAV */
+    nav {
+      display: flex;
+      align-items: center;
+      padding: 18px 32px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.5px;
+    }
+    .logo span { color: var(--accent); }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px;
+      gap: 32px;
+    }
+
+    .hero-text {
+      text-align: center;
+    }
+    .hero-text h1 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: 10px;
+    }
+    .hero-text h1 span { color: var(--accent); }
+    .hero-text p {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    /* UPLOAD ZONE */
+    .upload-zone {
+      width: 100%;
+      max-width: 480px;
+      border: 2px dashed var(--border);
+      border-radius: 16px;
+      padding: 40px 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s;
+      background: var(--surface);
+    }
+    .upload-zone:hover, .upload-zone.drag-over {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, 0.04);
+    }
+    .upload-icon { font-size: 36px; margin-bottom: 12px; }
+    .upload-zone p { color: var(--text-muted); font-size: 14px; margin-bottom: 4px; }
+    .upload-zone .small { font-size: 12px; opacity: 0.6; }
+
+    /* PREVIEW */
+    #preview {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .preview-box {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    #previewImg {
+      width: 72px;
+      height: 72px;
+      object-fit: cover;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .preview-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .preview-info .filename {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .preview-info .filesize {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .preview-info .ready-badge {
+      display: inline-block;
+      margin-top: 6px;
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      padding: 2px 8px;
+      border-radius: 20px;
+    }
+    .change-btn {
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 12px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-family: 'Syne', sans-serif;
+      transition: border-color 0.2s, color 0.2s;
+      flex-shrink: 0;
+    }
+    .change-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* SCAN BUTTON */
+    .btn-primary {
+      width: 100%;
+      max-width: 480px;
+      padding: 15px;
+      background: var(--accent);
+      color: #000;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Syne', sans-serif;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* LOADING */
+    #loading {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px 24px;
+    }
+    .loading-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: pulse 1.2s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.7); }
+    }
+
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 13px;
+      color: var(--text-muted);
+      transition: color 0.3s;
+    }
+    .step-item.active { color: var(--text); }
+    .step-item.done { color: #22c55e; }
+
+    .step-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      flex-shrink: 0;
+      background: var(--surface2);
+      transition: all 0.3s;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .step-item.active .step-icon {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, 0.1);
+      color: var(--accent);
+    }
+    .step-item.done .step-icon {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+      color: #22c55e;
+    }
+
+    .step-label { flex: 1; }
+    .step-sublabel {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 1px;
+      opacity: 0.7;
+    }
+
+    .step-spinner {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(0, 212, 255, 0.2);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .step-check { font-size: 13px; }
+
+    .loading-eta {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      text-align: center;
+    }
+
+    /* HIDDEN */
+    .hidden { display: none !important; }
+  </style>
 </head>
 <body>
-  <nav><div class="logo">🔍 ForenSight</div></nav>
 
-  <main class="hero">
-    <h1>Detect. Prove. Protect.</h1>
-    <p>Upload your original image. ForenSight builds a forensic case.</p>
+  <nav>
+    <div class="logo">🔍 Foren<span>Sight</span></div>
+  </nav>
 
+  <main>
+    <div class="hero-text">
+      <h1>Detect. Prove. <span>Protect.</span></h1>
+      <p>Upload your image — ForenSight builds a forensic case in seconds.</p>
+    </div>
+
+    <!-- UPLOAD ZONE -->
     <div class="upload-zone" id="uploadZone">
       <div class="upload-icon">📂</div>
       <p>Drop your image here or click to upload</p>
-      <p class="small">PNG, JPG, JPEG, WEBP supported</p>
+      <p class="small">PNG · JPG · JPEG · WEBP</p>
       <input type="file" id="fileInput" accept="image/*" hidden>
     </div>
 
+    <!-- PREVIEW (compact) -->
     <div id="preview" class="hidden">
-      <img id="previewImg" alt="Preview">
+      <div class="preview-box">
+        <img id="previewImg" alt="Preview">
+        <div class="preview-info">
+          <div class="filename" id="previewName">image.jpg</div>
+          <div class="filesize" id="previewSize">—</div>
+          <div class="ready-badge">✓ Ready to scan</div>
+        </div>
+        <button class="change-btn" id="changeBtn">Change</button>
+      </div>
       <button id="scanBtn" class="btn-primary">🔬 Run Forensic Scan</button>
     </div>
 
+    <!-- LOADING with steps -->
     <div id="loading" class="hidden">
-      <div class="spinner"></div>
-      <p>Running forensic analysis...</p>
+      <div class="loading-title">
+        <div class="pulse-dot"></div>
+        Forensic Analysis Running
+      </div>
+
+      <div class="steps-list">
+        <div class="step-item" id="step1">
+          <div class="step-icon">1</div>
+          <div>
+            <div class="step-label">Uploading & hashing image</div>
+            <div class="step-sublabel">Generating cryptographic fingerprint</div>
+          </div>
+          <div class="step-status"></div>
+        </div>
+        <div class="step-item" id="step2">
+          <div class="step-icon">2</div>
+          <div>
+            <div class="step-label">Extracting EXIF metadata</div>
+            <div class="step-sublabel">Reading device, timestamp & GPS data</div>
+          </div>
+          <div class="step-status"></div>
+        </div>
+        <div class="step-item" id="step3">
+          <div class="step-icon">3</div>
+          <div>
+            <div class="step-label">Scanning the web</div>
+            <div class="step-sublabel">Google Vision API — finding copies online</div>
+          </div>
+          <div class="step-status"></div>
+        </div>
+        <div class="step-item" id="step4">
+          <div class="step-icon">4</div>
+          <div>
+            <div class="step-label">Tamper detection</div>
+            <div class="step-sublabel">Checking for edits & metadata stripping</div>
+          </div>
+          <div class="step-status"></div>
+        </div>
+        <div class="step-item" id="step5">
+          <div class="step-icon">5</div>
+          <div>
+            <div class="step-label">Gemini AI report</div>
+            <div class="step-sublabel">Writing your forensic summary</div>
+          </div>
+          <div class="step-status"></div>
+        </div>
+      </div>
+
+      <div class="loading-eta" id="etaText">Estimated time: ~20 seconds</div>
     </div>
   </main>
 
   <script>
-    const API_URL = "https://forensight-production.up.railway.app/";
+    const API_URL = "https://forensight-production.up.railway.app";
     const zone = document.getElementById('uploadZone');
     const input = document.getElementById('fileInput');
     const preview = document.getElementById('preview');
@@ -40,28 +379,67 @@
 
     zone.addEventListener('click', () => input.click());
     zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
     zone.addEventListener('drop', e => {
       e.preventDefault();
       zone.classList.remove('drag-over');
       handleFile(e.dataTransfer.files[0]);
     });
-
     input.addEventListener('change', () => handleFile(input.files[0]));
+    document.getElementById('changeBtn').addEventListener('click', () => {
+      preview.classList.add('hidden');
+      zone.classList.remove('hidden');
+      input.value = '';
+    });
 
     function handleFile(file) {
+      if (!file) return;
       selectedFile = file;
       const reader = new FileReader();
       reader.onload = e => {
         document.getElementById('previewImg').src = e.target.result;
+        document.getElementById('previewName').textContent = file.name;
+        document.getElementById('previewSize').textContent = (file.size / 1024).toFixed(1) + ' KB';
+        zone.classList.add('hidden');
         preview.classList.remove('hidden');
       };
       reader.readAsDataURL(file);
+    }
+
+    // Step animation
+    const stepTimings = [1000, 3000, 6000, 14000, 18000]; // when each step becomes "active"
+    const stepDurations = [2000, 2500, 8000, 4000, 5000];  // how long each stays active before done
+
+    function animateSteps() {
+      stepTimings.forEach((delay, i) => {
+        const stepEl = document.getElementById(`step${i + 1}`);
+        const statusEl = stepEl.querySelector('.step-status');
+
+        setTimeout(() => {
+          // activate
+          stepEl.classList.add('active');
+          statusEl.innerHTML = '<div class="step-spinner"></div>';
+
+          // complete after duration
+          setTimeout(() => {
+            stepEl.classList.remove('active');
+            stepEl.classList.add('done');
+            stepEl.querySelector('.step-icon').textContent = '✓';
+            statusEl.innerHTML = '';
+          }, stepDurations[i]);
+        }, delay);
+      });
+
+      // update ETA text
+      setTimeout(() => { document.getElementById('etaText').textContent = 'Scanning the web... almost there'; }, 6000);
+      setTimeout(() => { document.getElementById('etaText').textContent = 'Generating AI report...'; }, 14000);
     }
 
     document.getElementById('scanBtn').addEventListener('click', async () => {
       if (!selectedFile) return;
       preview.classList.add('hidden');
       loading.classList.remove('hidden');
+      animateSteps();
 
       const formData = new FormData();
       formData.append('file', selectedFile);
@@ -75,6 +453,7 @@
         window.location.href = 'results.html';
       } catch (err) {
         loading.classList.add('hidden');
+        preview.classList.remove('hidden');
         alert('Scan failed. Make sure the backend is running.');
       }
     });
