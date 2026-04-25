@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import os, uuid
 from werkzeug.utils import secure_filename
+from shared.gemini_analyst import generate_forensic_summary
 
 # YOUR modules
 from intelligence.fingerprint import generate_phash
@@ -54,6 +55,7 @@ def scan_image():
         metadata = extract_exif_metadata(file_path)
         ownership = create_ownership_record(file_path)
         tamper = detect_tampering(file_path)
+        gemini_report = generate_forensic_summary(result)
 
         result = {
             "scan_id": unique_id,
@@ -67,7 +69,9 @@ def scan_image():
                 "metadata": metadata,
                 "ownership_record": ownership,
                 "tamper_analysis": tamper
-            }
+            },
+            "ai_forensic_report": gemini_report
+
         }
         return jsonify(result)
 
