@@ -290,6 +290,15 @@
     </div>
 
     <button class="btn-primary" id="downloadBtn">⬇ Download PDF Report</button>
+
+    <pre id="debugBox" style="background:#1a1a1a;color:#00d4ff;padding:16px;border-radius:8px;font-size:11px;overflow:auto;margin-top:20px;white-space:pre-wrap;"></pre>
+
+    <script>
+      document.getElementById('debugBox').textContent = JSON.stringify(
+        JSON.parse(localStorage.getItem('scanResult') || '{}'), null, 2
+      );
+    </script>
+
   </main>
 
   <script>
