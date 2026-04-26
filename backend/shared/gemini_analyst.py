@@ -61,8 +61,9 @@ Keep it factual, clear, and actionable. Do not use technical jargon without expl
             "model_used": "gemini-1.5-flash"
         }
     except Exception as e:
-        return {
-            "status": "error",
-            "message": str(e),
-            "analysis": "AI analysis unavailable. Please review the raw findings above."
-        }
+        print(f"GEMINI ERROR: {e}")  # this will show in Railway logs
+    return {
+        "status": "error",
+        "message": str(e),
+        "analysis": "AI analysis unavailable. Please review the raw findings above."
+    }
