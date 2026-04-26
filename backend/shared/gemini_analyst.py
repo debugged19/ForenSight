@@ -10,7 +10,7 @@ def generate_forensic_summary(scan_results):
     Send the full forensic scan results to Gemini and get back
     a plain-English investigation report written like a forensic analyst.
     """
-    model = genai.GenerativeModel("gemini-1.5-flash")
+    model = genai.GenerativeModel("gemini-2.0-flash")
 
     threat = scan_results["intelligence"]["threat_assessment"]
     metadata = scan_results["forensics"]["metadata"]
